@@ -270,38 +270,32 @@ func (w *WorkBook) NumSheets() int {
 //helper function to read all cells from file
 //Notice: the max value is the limit of the max capacity of lines.
 //Warning: the helper function will need big memeory if file is large.
-func (w *WorkBook) ReadAllCells(max int) (res [][]string) {
+func (w *WorkBook) ReadAllCells() (res [][]string) {
 	res = make([][]string, 0)
 	for _, sheet := range w.sheets {
-		if len(res) < max {
-			max = max - len(res)
-			w.prepareSheet(sheet)
-			if sheet.MaxRow != 0 {
-				leng := int(sheet.MaxRow) + 1
-				if max < leng {
-					leng = max
-				}
-				temp := make([][]string, leng)
-				for k, row := range sheet.rows {
-					data := make([]string, 0)
-					if len(row.cols) > 0 {
-						for _, col := range row.cols {
-							if uint16(len(data)) <= col.LastCol() {
-								data = append(data, make([]string, col.LastCol()-uint16(len(data))+1)...)
-							}
-							str := col.String(w)
-
-							for i := uint16(0); i < col.LastCol()-col.FirstCol()+1; i++ {
-								data[col.FirstCol()+i] = str[i]
-							}
+		w.prepareSheet(sheet)
+		if sheet.MaxRow != 0 {
+			leng := int(sheet.MaxRow) + 1
+			temp := make([][]string, leng)
+			for k, row := range sheet.rows {
+				data := make([]string, 0)
+				if len(row.cols) > 0 {
+					for _, col := range row.cols {
+						if uint16(len(data)) <= col.LastCol() {
+							data = append(data, make([]string, col.LastCol()-uint16(len(data))+1)...)
 						}
-						if leng > int(k) {
-							temp[k] = data
+						str := col.String(w)
+
+						for i := uint16(0); i < col.LastCol()-col.FirstCol()+1; i++ {
+							data[col.FirstCol()+i] = str[i]
 						}
 					}
+					if leng > int(k) {
+						temp[k] = data
+					}
 				}
-				res = append(res, temp...)
 			}
+			res = append(res, temp...)
 		}
 	}
 	return
